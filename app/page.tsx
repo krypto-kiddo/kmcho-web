@@ -7,6 +7,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +20,7 @@ export default function LoginPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, remember_me: rememberMe }),
       });
 
       const data = await res.json();
@@ -127,6 +128,19 @@ export default function LoginPage() {
                 onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
                 onBlur={(e) => e.target.style.borderColor = "#3a3020"}
               />
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ accentColor: "#c9a84c", width: "14px", height: "14px", cursor: "pointer" }}
+              />
+              <label htmlFor="rememberMe" style={{ fontSize: "12px", color: "#a09080", cursor: "pointer" }}>
+                Remember me
+              </label>
             </div>
 
             {/* Error */}
