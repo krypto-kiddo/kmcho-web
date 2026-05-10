@@ -262,7 +262,7 @@ export default function CustomerDashboard() {
                                     </p>
                                 </div>
                                 <p style={{ fontSize: "15px", fontWeight: 600, color: typeColor(entry.type), whiteSpace: "nowrap", marginLeft: "12px" }}>
-                                    {entry.type === "credit" ? "+" : "-"}₹{Number(entry.amount).toLocaleString("en-IN")}
+                                    {entry.type === "debit" ? "-" : "+"}₹{Number(entry.amount).toLocaleString("en-IN")}
                                 </p>
                             </div>
                         ))}

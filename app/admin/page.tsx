@@ -68,23 +68,33 @@ export default function AdminDashboard() {
   return (
     <main style={{ minHeight: "100svh", backgroundColor: "#1a1612", padding: "0 0 40px 0" }}>
 
-      {/* Header */}
-      <div style={{ borderBottom: "1px solid #3a3020", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <h1 style={{ color: "#c9a84c", fontSize: "18px", fontWeight: 600, letterSpacing: "0.02em" }}>
-            KMછો Canine
-          </h1>
-          <p style={{ color: "#6a5f52", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginTop: "2px" }}>
-            Admin · Ledger portal
-          </p>
-        </div>
+    {/* Header */}
+    <div style={{ borderBottom: "1px solid #3a3020", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div>
+        <h1 style={{ color: "#c9a84c", fontSize: "18px", fontWeight: 600, letterSpacing: "0.02em" }}>
+          KMછો Canine
+        </h1>
+        <p style={{ color: "#6a5f52", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginTop: "2px" }}>
+          Admin · Ledger portal
+        </p>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <button
+          type="button"
+          onClick={() => router.push("/admin/orders")}
+          style={{ fontSize: "11px", color: "#6a5f52", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.05em" }}
+        >
+          Orders
+        </button>
+        <button
+          type="button"
           onClick={() => { localStorage.removeItem("token"); router.push("/"); }}
           style={{ fontSize: "11px", color: "#6a5f52", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.05em" }}
         >
           Sign out
         </button>
       </div>
+    </div>
 
       <div style={{ padding: "20px" }}>
 
