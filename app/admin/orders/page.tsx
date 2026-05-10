@@ -76,7 +76,7 @@ export default function OrdersPage() {
   }
 
   const filtered = orders.filter((o) => {
-    const orderDay = new Date(o.created_at).toISOString().split("T")[0];
+    const orderDay = new Date(o.order_date || o.created_at).toISOString().split("T")[0];
     const matchesDate = dateFilter ? orderDay === dateFilter : true;
     const matchesStatus = statusFilter ? o.status === statusFilter : true;
     return matchesDate && matchesStatus;
@@ -192,7 +192,7 @@ export default function OrdersPage() {
                       {customer?.name || "Unknown"}
                     </p>
                     <p style={{ fontSize: "11px", color: "#6a5f52" }}>
-                      {order.description || "Daily meal"} · {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                      {order.description || "Daily meal"} · {new Date(order.order_date || order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                     </p>
                   </div>
                   <span style={{

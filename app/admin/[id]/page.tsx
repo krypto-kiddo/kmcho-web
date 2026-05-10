@@ -59,6 +59,7 @@ export default function CustomerDetail() {
   const [orderError, setOrderError] = useState("");
   const [orderSuccess, setOrderSuccess] = useState("");
   const [orderAmount, setOrderAmount] = useState("100");
+  const [orderDate, setOrderDate] = useState<string>(new Date().toISOString().split("T")[0]);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -125,12 +126,12 @@ export default function CustomerDetail() {
           user_id: parseInt(userId),
           amount: parseFloat(orderAmount),
           description: orderNote || "Daily meal",
-          order_date: new Date().toISOString(),
+          order_date: new Date(orderDate).toISOString(),
         }),
       });
       if (!res.ok) { const d = await res.json(); setOrderError(d.detail || "Failed"); return; }
       setOrderSuccess("Order created successfully");
-      setOrderNote("");setOrderAmount("100");
+      setOrderNote("");setOrderAmount("100"); setOrderDate(new Date().toISOString().split("T")[0]);
       loadData();
     } catch {
       setOrderError("Could not connect to server");
@@ -290,6 +291,17 @@ export default function CustomerDetail() {
                 />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "11px", color: "#a09080" }}>Order date</label>
+              <input
+                type="date"
+                value={orderDate}
+                onChange={(e) => setOrderDate(e.target.value)}
+                style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
+                onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
+                onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
               <label style={{ fontSize: "11px", color: "#a09080" }}>Note (optional)</label>
               <input
                 type="text"
@@ -367,7 +379,7 @@ export default function CustomerDetail() {
                 <div>
                   <p style={{ fontSize: "13px", color: "#e8e0d0", marginBottom: "3px" }}>{order.description || "Daily meal"}</p>
                   <p style={{ fontSize: "11px", color: "#6a5f52" }}>
-                    {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(order.order_date || order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                 </div>
                 <span style={{

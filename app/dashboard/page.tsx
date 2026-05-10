@@ -282,7 +282,7 @@ export default function CustomerDashboard() {
                                         {order.description || "Daily meal"}
                                     </p>
                                     <p style={{ fontSize: "11px", color: "#6a5f52" }}>
-                                        {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                                        {new Date(order.order_date || order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                                     </p>
                                 </div>
                                 <span style={{
