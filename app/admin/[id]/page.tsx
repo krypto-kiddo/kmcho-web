@@ -375,7 +375,7 @@ export default function CustomerDetail() {
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {orders.length === 0 && <p style={{ color: "#6a5f52", fontSize: "13px", textAlign: "center", padding: "30px 0" }}>No orders yet</p>}
             {orders.map((order) => (
-              <div key={order.id} style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div key={order.id} onClick={() => router.push(`/admin/orders/${order.id}`)} style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onMouseEnter={(e) => e.currentTarget.style.borderColor = "#c9a84c"} onMouseLeave={(e) => e.currentTarget.style.borderColor = "#3a3020"}>
                 <div>
                   <p style={{ fontSize: "13px", color: "#e8e0d0", marginBottom: "3px" }}>{order.description || "Daily meal"}</p>
                   <p style={{ fontSize: "11px", color: "#6a5f52" }}>

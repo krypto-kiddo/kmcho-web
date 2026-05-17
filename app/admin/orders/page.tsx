@@ -180,7 +180,7 @@ export default function OrdersPage() {
             const isUpdating = updatingId === order.id;
 
             return (
-              <div key={order.id} style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "16px" }}>
+              <div key={order.id} onClick={() => router.push(`/admin/orders/${order.id}`)} style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "16px", cursor: "pointer" }}>
 
                 {/* Top row */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
@@ -212,7 +212,7 @@ export default function OrdersPage() {
 
                 {/* Action buttons — only for pending */}
                 {order.status === "pending" && (
-                  <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                  <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                     <button
                       type="button"
                       disabled={isUpdating}
