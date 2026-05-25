@@ -176,6 +176,16 @@ export default function CustomerDetail() {
         >
           ←
         </button>
+        <button
+          type="button"
+          onClick={() => router.push(`/invoice/${userId}`)}
+          style={{
+            backgroundColor: "transparent", color: "#c9a84c", border: "1px solid #3a3020",
+            borderRadius: "6px", padding: "8px 16px", fontSize: "13px", cursor: "pointer"
+          }}
+        >
+          Statement
+        </button>
         <div>
           <h1 style={{ color: "#e8e0d0", fontSize: "16px", fontWeight: 600 }}>{user?.name}</h1>
           <p style={{ color: "#6a5f52", fontSize: "11px", marginTop: "1px" }}>{user?.phone || user?.email || "—"}</p>

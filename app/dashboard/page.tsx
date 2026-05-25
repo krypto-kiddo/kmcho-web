@@ -202,6 +202,19 @@ export default function CustomerDashboard() {
                     )}
                 </div>
 
+                {/* Statement button */}
+                <button
+                    type="button"
+                    onClick={() => router.push(`/invoice/${user?.id}`)}
+                    style={{
+                        width: "100%", marginBottom: "16px", backgroundColor: "transparent",
+                        color: "#c9a84c", border: "1px solid #3a3020", borderRadius: "10px",
+                        padding: "12px", fontSize: "13px", cursor: "pointer", letterSpacing: "0.05em",
+                    }}
+                >
+                    View Statement
+                </button>
+
                 {/* Stats row */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
                     <div style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "14px" }}>
