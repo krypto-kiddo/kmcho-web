@@ -11,6 +11,7 @@
     description: string;
     order_date: string;
     created_at: string;
+    amount: string | null;
     }
 
     interface User {
@@ -35,6 +36,11 @@
     const [description, setDescription] = useState("");
     const [status, setStatus] = useState("");
     const [orderDate, setOrderDate] = useState("");
+    
+    const [newAmount, setNewAmount] = useState("");
+    const [amountSaving, setAmountSaving] = useState(false);
+    const [amountError, setAmountError] = useState("");
+    const [amountSuccess, setAmountSuccess] = useState("");
 
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -111,6 +117,30 @@
         setError("Could not connect to server");
         } finally {
         setSaving(false);
+        }
+    }
+
+    async function handleAmountUpdate() {
+        setAmountError(""); setAmountSuccess("");
+        if (!newAmount || parseFloat(newAmount) <= 0) {
+            setAmountError("Enter a valid amount");
+            return;
+        }
+        setAmountSaving(true);
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${orderId}/amount`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ new_amount: parseFloat(newAmount) }),
+            });
+            const d = await res.json();
+            if (!res.ok) { setAmountError(d.detail || "Failed to update amount"); return; }
+            setAmountSuccess(`Updated: ₹${d.old_amount} → ₹${d.new_amount}`);
+            setNewAmount("");
+        } catch {
+            setAmountError("Could not connect to server");
+        } finally {
+            setAmountSaving(false);
         }
     }
 
@@ -240,6 +270,58 @@
                 </button>
 
             </form>
+            </div>
+
+            {/* Amount edit */}
+            <div style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "12px", padding: "20px", marginTop: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                    <span style={{ fontSize: "10px", letterSpacing: "0.18em", color: "#6a5f52", textTransform: "uppercase" as const }}>Order amount</span>
+                    <div style={{ flex: 1, height: "1px", backgroundColor: "#3a3020" }} />
+                </div>
+
+                {order?.status === "cancelled" && (
+                    <p style={{ fontSize: "11px", color: "#b8860b", backgroundColor: "#2e2510", border: "1px solid #b8860b33", borderRadius: "6px", padding: "8px 12px", marginBottom: "12px" }}>
+                        This order is cancelled — updating the amount will also update the refund entry. Customer balance will not change.
+                    </p>
+                )}
+
+                <p style={{ fontSize: "12px", color: "#6a5f52", marginBottom: "10px" }}>
+                    Current amount: <span style={{ color: "#c2b89a" }}>
+                        {order?.amount ? `₹${order.amount}` : "—"}
+                    </span>
+                </p>
+
+                <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                        type="number"
+                        value={newAmount}
+                        onChange={(e) => setNewAmount(e.target.value)}
+                        placeholder="New amount (₹)"
+                        min="1"
+                        style={{ flex: 1, backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "10px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none" }}
+                        onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
+                        onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                    />
+                    <button
+                        type="button"
+                        onClick={handleAmountUpdate}
+                        disabled={amountSaving}
+                        style={{ backgroundColor: amountSaving ? "#8a6f3a" : "#c9a84c", color: "#1a1612", fontWeight: 600, fontSize: "14px", borderRadius: "8px", padding: "10px 20px", border: "none", cursor: amountSaving ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const }}
+                    >
+                        {amountSaving ? "Saving..." : "Update"}
+                    </button>
+                </div>
+
+                {amountError && (
+                    <p style={{ fontSize: "12px", color: "#c47a7a", backgroundColor: "#2e1414", border: "1px solid #5a2a2a", borderRadius: "6px", padding: "8px 12px", marginTop: "10px" }}>
+                        {amountError}
+                    </p>
+                )}
+                {amountSuccess && (
+                    <p style={{ fontSize: "12px", color: "#4a7c4a", backgroundColor: "#1e2e1e", border: "1px solid #2a4a2a", borderRadius: "6px", padding: "8px 12px", marginTop: "10px" }}>
+                        {amountSuccess}
+                    </p>
+                )}
             </div>
         </div>
         </main>
