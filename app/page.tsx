@@ -50,37 +50,71 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ minHeight: "100svh", backgroundColor: "#1a1612", padding: "0 20px" }} className="flex flex-col items-center justify-center">
-      <div className="w-full" style={{ maxWidth: "360px" }}>
+    <main
+      className="flex flex-col items-center justify-center"
+      style={{
+        minHeight: "100svh",
+        backgroundImage: "url('/login-bg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        padding: "0 20px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Background blobs */}
+      <div style={{
+        position: "absolute", width: "400px", height: "400px",
+        background: "radial-gradient(circle, rgba(201,168,76,0.22) 0%, transparent 65%)",
+        borderRadius: "50%", top: "-100px", right: "-80px", filter: "blur(60px)", pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", width: "300px", height: "300px",
+        background: "radial-gradient(circle, rgba(180,155,220,0.18) 0%, transparent 65%)",
+        borderRadius: "50%", bottom: "-60px", left: "-60px", filter: "blur(50px)", pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", width: "200px", height: "200px",
+        background: "radial-gradient(circle, rgba(100,180,155,0.14) 0%, transparent 65%)",
+        borderRadius: "50%", bottom: "120px", right: "40px", filter: "blur(40px)", pointerEvents: "none",
+      }} />
 
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <h1 style={{ color: "#c9a84c", fontSize: "26px", fontWeight: 600, letterSpacing: "0.02em" }}>
-            KMછો Canine
-          </h1>
-          <p style={{ color: "#6a5f52", fontSize: "10px", letterSpacing: "0.18em", marginTop: "6px" }} className="uppercase">
-            Cloud kitchen for dogs · Ahmedabad
-          </p>
-        </div>
+      <div className="w-full" style={{ maxWidth: "360px", position: "relative", zIndex: 1 }}>
 
-        {/* Card */}
-        <div style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "12px", padding: "28px" }}>
+        {/* Glass card */}
+        <div style={{
+          background: "rgba(255, 255, 255, 0.45)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255, 255, 255, 0.7)",
+          borderRadius: "20px",
+          padding: "36px 28px",
+          boxShadow: "0 8px 32px rgba(160, 130, 80, 0.1), inset 0 1px 0 rgba(255,255,255,0.8)",
+        }}>
 
-          {/* Section label */}
+          {/* Logo */}
+          <div style={{ marginBottom: "28px" }}>
+            <h1 style={{ color: "#8a6a28", fontSize: "26px", fontWeight: 600, letterSpacing: "0.02em", margin: 0 }}>
+              KMછો Canine
+            </h1>
+            <p style={{ color: "#b09a70", fontSize: "10px", letterSpacing: "0.18em", marginTop: "6px", textTransform: "uppercase" }}>
+              Cloud kitchen for dogs · Ahmedabad
+            </p>
+          </div>
+
+          {/* Divider */}
           <div className="flex items-center gap-3" style={{ marginBottom: "24px" }}>
-            <span style={{ fontSize: "10px", letterSpacing: "0.18em", color: "#6a5f52", textTransform: "uppercase" }}>
+            <span style={{ fontSize: "10px", letterSpacing: "0.18em", color: "#b09a70", textTransform: "uppercase", whiteSpace: "nowrap" }}>
               Sign in
             </span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#3a3020" }} />
+            <div style={{ flex: 1, height: "1px", background: "rgba(160,130,80,0.2)" }} />
           </div>
 
           <form onSubmit={handleLogin} className="flex flex-col" style={{ gap: "16px" }}>
 
             {/* Email */}
             <div className="flex flex-col" style={{ gap: "6px" }}>
-              <label style={{ fontSize: "11px", color: "#a09080", letterSpacing: "0.05em" }}>
-                Email
-              </label>
+              <label style={{ fontSize: "11px", color: "#9a8060", letterSpacing: "0.05em" }}>Email</label>
               <input
                 type="email"
                 value={email}
@@ -88,26 +122,32 @@ export default function LoginPage() {
                 required
                 placeholder="you@example.com"
                 style={{
-                  backgroundColor: "#2a2420",
-                  border: "1px solid #3a3020",
-                  borderRadius: "8px",
+                  background: "rgba(255, 255, 255, 0.6)",
+                  border: "1px solid rgba(180, 150, 90, 0.25)",
+                  borderRadius: "10px",
                   padding: "10px 12px",
                   fontSize: "14px",
-                  color: "#e8e0d0",
+                  color: "#3a3020",
                   outline: "none",
                   width: "100%",
-                  transition: "border-color 0.15s",
+                  transition: "border-color 0.15s, background 0.15s",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
                 }}
-                onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "rgba(180,140,60,0.5)";
+                  e.target.style.background = "rgba(255,255,255,0.8)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "rgba(180,150,90,0.25)";
+                  e.target.style.background = "rgba(255,255,255,0.6)";
+                }}
               />
             </div>
 
             {/* Password */}
             <div className="flex flex-col" style={{ gap: "6px" }}>
-              <label style={{ fontSize: "11px", color: "#a09080", letterSpacing: "0.05em" }}>
-                Password
-              </label>
+              <label style={{ fontSize: "11px", color: "#9a8060", letterSpacing: "0.05em" }}>Password</label>
               <input
                 type="password"
                 value={password}
@@ -115,21 +155,30 @@ export default function LoginPage() {
                 required
                 placeholder="••••••••"
                 style={{
-                  backgroundColor: "#2a2420",
-                  border: "1px solid #3a3020",
-                  borderRadius: "8px",
+                  background: "rgba(255, 255, 255, 0.6)",
+                  border: "1px solid rgba(180, 150, 90, 0.25)",
+                  borderRadius: "10px",
                   padding: "10px 12px",
                   fontSize: "14px",
-                  color: "#e8e0d0",
+                  color: "#3a3020",
                   outline: "none",
                   width: "100%",
-                  transition: "border-color 0.15s",
+                  transition: "border-color 0.15s, background 0.15s",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
                 }}
-                onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "rgba(180,140,60,0.5)";
+                  e.target.style.background = "rgba(255,255,255,0.8)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "rgba(180,150,90,0.25)";
+                  e.target.style.background = "rgba(255,255,255,0.6)";
+                }}
               />
             </div>
 
+            {/* Remember me */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="checkbox"
@@ -138,7 +187,7 @@ export default function LoginPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 style={{ accentColor: "#c9a84c", width: "14px", height: "14px", cursor: "pointer" }}
               />
-              <label htmlFor="rememberMe" style={{ fontSize: "12px", color: "#a09080", cursor: "pointer" }}>
+              <label htmlFor="rememberMe" style={{ fontSize: "12px", color: "#9a8060", cursor: "pointer" }}>
                 Remember me
               </label>
             </div>
@@ -147,11 +196,12 @@ export default function LoginPage() {
             {error && (
               <div style={{
                 fontSize: "12px",
-                color: "#c47a7a",
-                backgroundColor: "#2e1414",
-                border: "1px solid #5a2a2a",
-                borderRadius: "6px",
+                color: "#8b3a3a",
+                background: "rgba(180, 80, 80, 0.08)",
+                border: "1px solid rgba(180, 80, 80, 0.2)",
+                borderRadius: "8px",
                 padding: "8px 12px",
+                backdropFilter: "blur(8px)",
               }}>
                 {error}
               </div>
@@ -162,20 +212,25 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               style={{
-                marginTop: "8px",
-                backgroundColor: loading ? "#8a6f3a" : "#c9a84c",
-                color: "#1a1612",
+                marginTop: "4px",
+                background: loading
+                  ? "rgba(180, 150, 80, 0.5)"
+                  : "rgba(201, 168, 76, 0.85)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                border: "1px solid rgba(201, 168, 76, 0.4)",
+                color: "#5a3e10",
                 fontWeight: 600,
                 fontSize: "14px",
-                borderRadius: "8px",
+                borderRadius: "10px",
                 padding: "11px",
-                border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
-                transition: "background-color 0.15s",
+                transition: "background 0.15s",
                 width: "100%",
+                letterSpacing: "0.03em",
               }}
-              onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "#e2c97e" }}
-              onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "#c9a84c" }}
+              onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "rgba(226,201,126,0.9)" }}
+              onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = "rgba(201,168,76,0.85)" }}
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
@@ -184,7 +239,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p style={{ textAlign: "center", fontSize: "11px", color: "#6a5f52", marginTop: "24px" }}>
+        <p style={{ textAlign: "center", fontSize: "11px", color: "#b09a70", marginTop: "20px" }}>
           my.kmcho.co.in · Ledger portal
         </p>
 
