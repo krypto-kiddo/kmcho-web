@@ -33,6 +33,28 @@ interface Order {
   created_at: string;
 }
 
+const glassCard = {
+  background: "rgba(255,255,255,0.45)",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
+  border: "1px solid rgba(255,255,255,0.7)",
+  borderRadius: "14px",
+  boxShadow: "0 4px 20px rgba(160,130,80,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+} as React.CSSProperties;
+
+const glassInput = {
+  background: "rgba(255,255,255,0.6)",
+  backdropFilter: "blur(8px)",
+  WebkitBackdropFilter: "blur(8px)",
+  border: "1px solid rgba(180,150,90,0.25)",
+  borderRadius: "8px",
+  padding: "9px 12px",
+  fontSize: "14px",
+  color: "#3a3020",
+  outline: "none",
+  width: "100%",
+} as React.CSSProperties;
+
 export default function CustomerDetail() {
   const router = useRouter();
   const params = useParams();
@@ -44,7 +66,6 @@ export default function CustomerDetail() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"ledger" | "orders">("ledger");
 
-  // Credit form
   const [creditAmount, setCreditAmount] = useState("");
   const [creditMode, setCreditMode] = useState("UPI");
   const [creditNote, setCreditNote] = useState("");
@@ -53,7 +74,6 @@ export default function CustomerDetail() {
   const [creditError, setCreditError] = useState("");
   const [creditSuccess, setCreditSuccess] = useState("");
 
-  // Order form
   const [orderNote, setOrderNote] = useState("");
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState("");
@@ -105,7 +125,7 @@ export default function CustomerDetail() {
       });
       if (!res.ok) { const d = await res.json(); setCreditError(d.detail || "Failed"); return; }
       setCreditSuccess("Balance updated successfully");
-      setCreditAmount(""); setCreditNote("");setCreditTransactionId("");
+      setCreditAmount(""); setCreditNote(""); setCreditTransactionId("");
       loadData();
     } catch {
       setCreditError("Could not connect to server");
@@ -131,7 +151,7 @@ export default function CustomerDetail() {
       });
       if (!res.ok) { const d = await res.json(); setOrderError(d.detail || "Failed"); return; }
       setOrderSuccess("Order created successfully");
-      setOrderNote("");setOrderAmount("100"); setOrderDate(new Date().toISOString().split("T")[0]);
+      setOrderNote(""); setOrderAmount("100"); setOrderDate(new Date().toISOString().split("T")[0]);
       loadData();
     } catch {
       setOrderError("Could not connect to server");
@@ -141,38 +161,71 @@ export default function CustomerDetail() {
   }
 
   function typeColor(type: string) {
-    if (type === "credit") return "#4a7c4a";
-    if (type === "debit") return "#8b3a3a";
+    if (type === "credit") return "#2e7d32";
+    if (type === "debit") return "#c0392b";
     return "#b8860b";
   }
 
   function statusColor(status: string) {
-    if (status === "delivered") return "#4a7c4a";
-    if (status === "cancelled") return "#8b3a3a";
+    if (status === "delivered") return "#2e7d32";
+    if (status === "cancelled") return "#c0392b";
     return "#b8860b";
   }
 
+  function statusBg(status: string) {
+    if (status === "delivered") return "rgba(46,125,50,0.1)";
+    if (status === "cancelled") return "rgba(192,57,43,0.1)";
+    return "rgba(184,134,11,0.1)";
+  }
+
   function balanceColor(balance: number) {
-    if (balance <= 0) return "#8b3a3a";
+    if (balance <= 0) return "#c0392b";
     if (balance < 500) return "#b8860b";
-    return "#4a7c4a";
+    return "#2e7d32";
   }
 
   if (loading) return (
-    <main style={{ minHeight: "100svh", backgroundColor: "#1a1612", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#6a5f52", fontSize: "13px" }}>Loading...</p>
+    <main style={{
+      minHeight: "100svh",
+      backgroundImage: "url('/inner-bg.png')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundAttachment: "fixed",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <div style={{ ...glassCard, padding: "20px 32px" }}>
+        <p style={{ color: "#9a8060", fontSize: "13px" }}>Loading...</p>
+      </div>
     </main>
   );
 
   return (
-    <main style={{ minHeight: "100svh", backgroundColor: "#1a1612", paddingBottom: "40px" }}>
+    <main style={{
+      minHeight: "100svh",
+      backgroundImage: "url('/inner-bg.png')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundAttachment: "fixed",
+      paddingBottom: "40px",
+    }}>
+
+      {/* Overlay */}
+      <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(255,255,255,0.4)", zIndex: 0, pointerEvents: "none" }} />
 
       {/* Header */}
-      <div style={{ borderBottom: "1px solid #3a3020", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
+      <div style={{
+        ...glassCard,
+        borderRadius: 0,
+        borderTop: "none", borderLeft: "none", borderRight: "none",
+        borderBottom: "1px solid rgba(255,255,255,0.5)",
+        padding: "14px 20px",
+        display: "flex", alignItems: "center", gap: "12px",
+        position: "sticky", top: 0, zIndex: 10,
+      }}>
         <button
           type="button"
           onClick={() => router.push("/admin")}
-          style={{ background: "none", border: "none", color: "#6a5f52", cursor: "pointer", fontSize: "18px", padding: "0 4px 0 0" }}
+          style={{ background: "none", border: "none", color: "#9a8060", cursor: "pointer", fontSize: "18px", padding: "0 4px 0 0" }}
         >
           ←
         </button>
@@ -180,23 +233,27 @@ export default function CustomerDetail() {
           type="button"
           onClick={() => router.push(`/invoice/${userId}`)}
           style={{
-            backgroundColor: "transparent", color: "#c9a84c", border: "1px solid #3a3020",
-            borderRadius: "6px", padding: "8px 16px", fontSize: "13px", cursor: "pointer"
+            background: "rgba(201,168,76,0.15)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            color: "#8a6a28",
+            border: "1px solid rgba(201,168,76,0.35)",
+            borderRadius: "6px", padding: "6px 14px", fontSize: "12px", cursor: "pointer",
           }}
         >
           Statement
         </button>
         <div>
-          <h1 style={{ color: "#e8e0d0", fontSize: "16px", fontWeight: 600 }}>{user?.name}</h1>
-          <p style={{ color: "#6a5f52", fontSize: "11px", marginTop: "1px" }}>{user?.phone || user?.email || "—"}</p>
+          <h1 style={{ color: "#3a3020", fontSize: "16px", fontWeight: 600 }}>{user?.name}</h1>
+          <p style={{ color: "#b09a70", fontSize: "11px", marginTop: "1px" }}>{user?.phone || user?.email || "—"}</p>
         </div>
       </div>
 
-      <div style={{ padding: "20px" }}>
+      <div style={{ padding: "20px", position: "relative", zIndex: 1 }}>
 
         {/* Balance card */}
-        <div style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
-          <p style={{ fontSize: "11px", color: "#6a5f52", marginBottom: "6px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        <div style={{ ...glassCard, padding: "20px", marginBottom: "16px" }}>
+          <p style={{ fontSize: "11px", color: "#b09a70", marginBottom: "6px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
             Wallet balance
           </p>
           <p style={{ fontSize: "36px", fontWeight: 700, color: balanceColor(Number(user?.current_balance)) }}>
@@ -205,27 +262,29 @@ export default function CustomerDetail() {
         </div>
 
         {/* Add credit form */}
-        <form onSubmit={handleCredit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ ...glassCard, padding: "20px", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+            <span style={{ fontSize: "10px", letterSpacing: "0.18em", color: "#b09a70", textTransform: "uppercase" }}>Add credit</span>
+            <div style={{ flex: 1, height: "1px", background: "rgba(160,130,80,0.2)" }} />
+          </div>
+          <form onSubmit={handleCredit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "11px", color: "#a09080" }}>Amount (₹)</label>
+                <label style={{ fontSize: "11px", color: "#9a8060" }}>Amount (₹)</label>
                 <input
-                  type="number"
-                  value={creditAmount}
+                  type="number" value={creditAmount}
                   onChange={(e) => setCreditAmount(e.target.value)}
-                  required
-                  placeholder="500"
-                  style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
-                  onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                  onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                  required placeholder="500"
+                  style={glassInput}
+                  onFocus={(e) => e.target.style.borderColor = "rgba(180,140,60,0.5)"}
+                  onBlur={(e) => e.target.style.borderColor = "rgba(180,150,90,0.25)"}
                 />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "11px", color: "#a09080" }}>Mode</label>
+                <label style={{ fontSize: "11px", color: "#9a8060" }}>Mode</label>
                 <select
-                  value={creditMode}
-                  onChange={(e) => setCreditMode(e.target.value)}
-                  style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
+                  value={creditMode} onChange={(e) => setCreditMode(e.target.value)}
+                  style={{ ...glassInput, cursor: "pointer" }}
                 >
                   <option value="UPI">UPI</option>
                   <option value="Cash">Cash</option>
@@ -237,98 +296,123 @@ export default function CustomerDetail() {
 
             {creditMode !== "Cash" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "11px", color: "#a09080" }}>
+                <label style={{ fontSize: "11px", color: "#9a8060" }}>
                   Transaction ID
-                  <span style={{ color: "#6a5f52", marginLeft: "4px" }}>
+                  <span style={{ color: "#b09a70", marginLeft: "4px" }}>
                     {creditMode === "UPI" ? "(UTR number)" : "(reference number)"}
                   </span>
                 </label>
                 <input
-                  type="text"
-                  value={creditTransactionId}
+                  type="text" value={creditTransactionId}
                   onChange={(e) => setCreditTransactionId(e.target.value)}
                   placeholder={creditMode === "UPI" ? "e.g. 407721318453" : "e.g. REF123456"}
-                  style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
-                  onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                  onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                  style={glassInput}
+                  onFocus={(e) => e.target.style.borderColor = "rgba(180,140,60,0.5)"}
+                  onBlur={(e) => e.target.style.borderColor = "rgba(180,150,90,0.25)"}
                 />
               </div>
             )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-              <label style={{ fontSize: "11px", color: "#a09080" }}>Note (optional)</label>
+              <label style={{ fontSize: "11px", color: "#9a8060" }}>Note (optional)</label>
               <input
-                type="text"
-                value={creditNote}
+                type="text" value={creditNote}
                 onChange={(e) => setCreditNote(e.target.value)}
                 placeholder="e.g. October recharge"
-                style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
-                onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                style={glassInput}
+                onFocus={(e) => e.target.style.borderColor = "rgba(180,140,60,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(180,150,90,0.25)"}
               />
             </div>
 
-            {creditError && <p style={{ fontSize: "12px", color: "#c47a7a", backgroundColor: "#2e1414", border: "1px solid #5a2a2a", borderRadius: "6px", padding: "8px 12px" }}>{creditError}</p>}
-            {creditSuccess && <p style={{ fontSize: "12px", color: "#4a7c4a", backgroundColor: "#1e2e1e", border: "1px solid #2a4a2a", borderRadius: "6px", padding: "8px 12px" }}>{creditSuccess}</p>}
+            {creditError && (
+              <p style={{ fontSize: "12px", color: "#c0392b", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: "6px", padding: "8px 12px" }}>
+                {creditError}
+              </p>
+            )}
+            {creditSuccess && (
+              <p style={{ fontSize: "12px", color: "#2e7d32", background: "rgba(46,125,50,0.08)", border: "1px solid rgba(46,125,50,0.2)", borderRadius: "6px", padding: "8px 12px" }}>
+                {creditSuccess}
+              </p>
+            )}
 
             <button
-              type="submit"
-              disabled={creditLoading}
-              style={{ backgroundColor: creditLoading ? "#8a6f3a" : "#c9a84c", color: "#1a1612", fontWeight: 600, fontSize: "13px", borderRadius: "8px", padding: "10px", border: "none", cursor: creditLoading ? "not-allowed" : "pointer", width: "100%" }}
+              type="submit" disabled={creditLoading}
+              style={{
+                background: creditLoading ? "rgba(180,150,80,0.5)" : "rgba(201,168,76,0.85)",
+                backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                border: "1px solid rgba(201,168,76,0.4)",
+                color: "#5a3e10", fontWeight: 600, fontSize: "13px",
+                borderRadius: "8px", padding: "10px", cursor: creditLoading ? "not-allowed" : "pointer", width: "100%",
+              }}
             >
               {creditLoading ? "Processing..." : "Add credit"}
             </button>
           </form>
+        </div>
 
         {/* Create order form */}
-        <div style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "12px", padding: "20px", marginBottom: "16px" }}>
+        <div style={{ ...glassCard, padding: "20px", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-            <span style={{ fontSize: "10px", letterSpacing: "0.18em", color: "#6a5f52", textTransform: "uppercase" }}>Create order</span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#3a3020" }} />
+            <span style={{ fontSize: "10px", letterSpacing: "0.18em", color: "#b09a70", textTransform: "uppercase" }}>Create order</span>
+            <div style={{ flex: 1, height: "1px", background: "rgba(160,130,80,0.2)" }} />
           </div>
           <form onSubmit={handleOrder} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <label style={{ fontSize: "11px", color: "#a09080" }}>Amount (₹)</label>
-                <input
-                    type="number"
-                    value={orderAmount}
-                    onChange={(e) => setOrderAmount(e.target.value)}
-                    required
-                    placeholder="100"
-                    style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
-                    onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                    onBlur={(e) => e.target.style.borderColor = "#3a3020"}
-                />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-              <label style={{ fontSize: "11px", color: "#a09080" }}>Order date</label>
+              <label style={{ fontSize: "11px", color: "#9a8060" }}>Amount (₹)</label>
               <input
-                type="date"
-                value={orderDate}
-                onChange={(e) => setOrderDate(e.target.value)}
-                style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
-                onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                type="number" value={orderAmount}
+                onChange={(e) => setOrderAmount(e.target.value)}
+                required placeholder="100"
+                style={glassInput}
+                onFocus={(e) => e.target.style.borderColor = "rgba(180,140,60,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(180,150,90,0.25)"}
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-              <label style={{ fontSize: "11px", color: "#a09080" }}>Note (optional)</label>
+              <label style={{ fontSize: "11px", color: "#9a8060" }}>Order date</label>
               <input
-                type="text"
-                value={orderNote}
+                type="date" value={orderDate}
+                onChange={(e) => setOrderDate(e.target.value)}
+                style={glassInput}
+                onFocus={(e) => e.target.style.borderColor = "rgba(180,140,60,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(180,150,90,0.25)"}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <label style={{ fontSize: "11px", color: "#9a8060" }}>Note (optional)</label>
+              <input
+                type="text" value={orderNote}
                 onChange={(e) => setOrderNote(e.target.value)}
                 placeholder="e.g. Chicken + rice"
-                style={{ backgroundColor: "#2a2420", border: "1px solid #3a3020", borderRadius: "8px", padding: "9px 12px", fontSize: "14px", color: "#e8e0d0", outline: "none", width: "100%" }}
-                onFocus={(e) => e.target.style.borderColor = "#c9a84c"}
-                onBlur={(e) => e.target.style.borderColor = "#3a3020"}
+                style={glassInput}
+                onFocus={(e) => e.target.style.borderColor = "rgba(180,140,60,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(180,150,90,0.25)"}
               />
             </div>
-            {orderError && <p style={{ fontSize: "12px", color: "#c47a7a", backgroundColor: "#2e1414", border: "1px solid #5a2a2a", borderRadius: "6px", padding: "8px 12px" }}>{orderError}</p>}
-            {orderSuccess && <p style={{ fontSize: "12px", color: "#4a7c4a", backgroundColor: "#1e2e1e", border: "1px solid #2a4a2a", borderRadius: "6px", padding: "8px 12px" }}>{orderSuccess}</p>}
+
+            {orderError && (
+              <p style={{ fontSize: "12px", color: "#c0392b", background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: "6px", padding: "8px 12px" }}>
+                {orderError}
+              </p>
+            )}
+            {orderSuccess && (
+              <p style={{ fontSize: "12px", color: "#2e7d32", background: "rgba(46,125,50,0.08)", border: "1px solid rgba(46,125,50,0.2)", borderRadius: "6px", padding: "8px 12px" }}>
+                {orderSuccess}
+              </p>
+            )}
+
             <button
-              type="submit"
-              disabled={orderLoading}
-              style={{ backgroundColor: "transparent", color: "#c9a84c", fontWeight: 600, fontSize: "13px", borderRadius: "8px", padding: "10px", border: "1px solid #c9a84c", cursor: orderLoading ? "not-allowed" : "pointer", width: "100%", opacity: orderLoading ? 0.5 : 1 }}
+              type="submit" disabled={orderLoading}
+              style={{
+                background: "rgba(255,255,255,0.5)",
+                backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                color: "#8a6a28", fontWeight: 600, fontSize: "13px",
+                borderRadius: "8px", padding: "10px",
+                border: "1px solid rgba(201,168,76,0.4)",
+                cursor: orderLoading ? "not-allowed" : "pointer", width: "100%",
+                opacity: orderLoading ? 0.5 : 1,
+              }}
             >
               {orderLoading ? "Creating..." : `Create order — ₹${orderAmount || "0"}`}
             </button>
@@ -339,19 +423,15 @@ export default function CustomerDetail() {
         <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
           {(["ledger", "orders"] as const).map((tab) => (
             <button
-              key={tab}
-              type="button"
+              key={tab} type="button"
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: "7px 16px",
-                borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: 500,
-                border: activeTab === tab ? "1px solid #c9a84c" : "1px solid #3a3020",
-                backgroundColor: activeTab === tab ? "#c9a84c22" : "transparent",
-                color: activeTab === tab ? "#c9a84c" : "#6a5f52",
-                cursor: "pointer",
-                textTransform: "capitalize",
+                padding: "7px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 500,
+                backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                border: activeTab === tab ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(255,255,255,0.6)",
+                background: activeTab === tab ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.4)",
+                color: activeTab === tab ? "#8a6a28" : "#b09a70",
+                cursor: "pointer", textTransform: "capitalize",
               }}
             >
               {tab} {tab === "ledger" ? `(${ledger.length})` : `(${orders.length})`}
@@ -362,12 +442,17 @@ export default function CustomerDetail() {
         {/* Ledger entries */}
         {activeTab === "ledger" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {ledger.length === 0 && <p style={{ color: "#6a5f52", fontSize: "13px", textAlign: "center", padding: "30px 0" }}>No entries yet</p>}
+            {ledger.length === 0 && (
+              <p style={{ color: "#b09a70", fontSize: "13px", textAlign: "center", padding: "30px 0" }}>No entries yet</p>
+            )}
             {ledger.map((entry) => (
-              <div key={entry.id} style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div key={entry.id} style={{
+                ...glassCard, borderRadius: "10px",
+                padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center",
+              }}>
                 <div>
-                  <p style={{ fontSize: "13px", color: "#e8e0d0", marginBottom: "3px" }}>{entry.description || "—"}</p>
-                  <p style={{ fontSize: "11px", color: "#6a5f52" }}>
+                  <p style={{ fontSize: "13px", color: "#3a3020", marginBottom: "3px" }}>{entry.description || "—"}</p>
+                  <p style={{ fontSize: "11px", color: "#b09a70" }}>
                     {entry.mode_of_payment && `${entry.mode_of_payment} · `}
                     {new Date(entry.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
@@ -383,24 +468,39 @@ export default function CustomerDetail() {
         {/* Orders */}
         {activeTab === "orders" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {orders.length === 0 && <p style={{ color: "#6a5f52", fontSize: "13px", textAlign: "center", padding: "30px 0" }}>No orders yet</p>}
+            {orders.length === 0 && (
+              <p style={{ color: "#b09a70", fontSize: "13px", textAlign: "center", padding: "30px 0" }}>No orders yet</p>
+            )}
             {orders.map((order) => (
-              <div key={order.id} onClick={() => router.push(`/admin/orders/${order.id}`)} style={{ backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onMouseEnter={(e) => e.currentTarget.style.borderColor = "#c9a84c"} onMouseLeave={(e) => e.currentTarget.style.borderColor = "#3a3020"}>
+              <div
+                key={order.id}
+                onClick={() => router.push(`/admin/orders/${order.id}`)}
+                style={{
+                  ...glassCard, borderRadius: "10px",
+                  padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer",
+                  transition: "border-color 0.15s, box-shadow 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(201,168,76,0.5)";
+                  e.currentTarget.style.boxShadow = "0 4px 24px rgba(160,130,80,0.15), inset 0 1px 0 rgba(255,255,255,0.9)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)";
+                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(160,130,80,0.08), inset 0 1px 0 rgba(255,255,255,0.8)";
+                }}
+              >
                 <div>
-                  <p style={{ fontSize: "13px", color: "#e8e0d0", marginBottom: "3px" }}>{order.description || "Daily meal"}</p>
-                  <p style={{ fontSize: "11px", color: "#6a5f52" }}>
+                  <p style={{ fontSize: "13px", color: "#3a3020", marginBottom: "3px" }}>{order.description || "Daily meal"}</p>
+                  <p style={{ fontSize: "11px", color: "#b09a70" }}>
                     {new Date(order.order_date || order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                 </div>
                 <span style={{
-                  fontSize: "11px",
-                  fontWeight: 500,
+                  fontSize: "11px", fontWeight: 500,
                   color: statusColor(order.status),
-                  backgroundColor: order.status === "delivered" ? "#1e2e1e" : order.status === "cancelled" ? "#2e1414" : "#2e2510",
+                  background: statusBg(order.status),
                   border: `1px solid ${statusColor(order.status)}44`,
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  textTransform: "capitalize",
+                  borderRadius: "6px", padding: "4px 10px", textTransform: "capitalize",
                 }}>
                   {order.status}
                 </span>

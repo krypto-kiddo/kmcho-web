@@ -35,19 +35,26 @@ function getMonthRange() {
 }
 
 function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function formatTime(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
 }
 
 function formatAmount(val: string | null) {
   if (!val) return "—";
   return "₹" + parseFloat(val).toLocaleString("en-IN", { minimumFractionDigits: 2 });
 }
+
+const glassCard = {
+  background: "rgba(255,255,255,0.45)",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
+  border: "1px solid rgba(255,255,255,0.7)",
+  borderRadius: "14px",
+  boxShadow: "0 4px 20px rgba(160,130,80,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
+} as React.CSSProperties;
 
 export default function InvoicePage() {
   const router = useRouter();
@@ -64,8 +71,7 @@ export default function InvoicePage() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   async function fetchInvoice() {
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/invoice/${userId}?from_date=${fromDate}&to_date=${toDate}`,
@@ -74,8 +80,7 @@ export default function InvoicePage() {
       if (res.status === 401) { router.push("/"); return; }
       if (res.status === 429) { setError("Too many requests. Please wait a moment."); return; }
       if (!res.ok) { const d = await res.json(); setError(d.detail || "Failed to load statement"); return; }
-      const data = await res.json();
-      setInvoice(data);
+      setInvoice(await res.json());
     } catch {
       setError("Could not connect to server");
     } finally {
@@ -88,80 +93,32 @@ export default function InvoicePage() {
     fetchInvoice();
   }, []);
 
+  // Document styles — keep dark/formal for printing
   const s = {
-    page: { minHeight: "100svh", backgroundColor: "#1a1612", fontFamily: "'Georgia', serif" } as React.CSSProperties,
-    container: { maxWidth: "760px", margin: "0 auto", padding: "24px 16px 60px" } as React.CSSProperties,
-
-    // Controls bar
-    controls: { display: "flex", gap: "10px", alignItems: "flex-end", flexWrap: "wrap" as const, marginBottom: "28px" },
-    label: { fontSize: "10px", letterSpacing: "0.1em", color: "#6a5f52", textTransform: "uppercase" as const, marginBottom: "6px" },
-    dateInput: {
-      backgroundColor: "#221e18", border: "1px solid #3a3020", borderRadius: "6px",
-      color: "#c9a84c", padding: "8px 12px", fontSize: "13px", outline: "none", width: "140px",
-    } as React.CSSProperties,
-    generateBtn: {
-      backgroundColor: "#c9a84c", color: "#1a1612", border: "none", borderRadius: "6px",
-      padding: "9px 20px", fontSize: "13px", fontWeight: 700, cursor: "pointer", letterSpacing: "0.03em",
-    } as React.CSSProperties,
-    printBtn: {
-      backgroundColor: "transparent", color: "#c9a84c", border: "1px solid #3a3020", borderRadius: "6px",
-      padding: "9px 18px", fontSize: "13px", cursor: "pointer", letterSpacing: "0.03em",
-    } as React.CSSProperties,
-    backBtn: {
-      background: "none", border: "none", color: "#6a5f52", fontSize: "12px",
-      cursor: "pointer", letterSpacing: "0.05em", padding: "0", marginBottom: "20px", display: "block",
-    } as React.CSSProperties,
-
-    // Invoice document
-    doc: {
-      backgroundColor: "#1e1a14", border: "1px solid #3a3020", borderRadius: "10px", overflow: "hidden",
-    } as React.CSSProperties,
-
-    // Header
+    doc: { backgroundColor: "#1e1a14", border: "1px solid #3a3020", borderRadius: "10px", overflow: "hidden" } as React.CSSProperties,
     header: { padding: "28px 28px 20px", borderBottom: "1px solid #3a3020" } as React.CSSProperties,
     brand: { fontSize: "22px", fontWeight: 700, color: "#c9a84c", letterSpacing: "0.08em", textTransform: "uppercase" as const } as React.CSSProperties,
     brandSub: { fontSize: "11px", color: "#6a5f52", letterSpacing: "0.1em", marginTop: "2px" } as React.CSSProperties,
     invoiceTitle: { fontSize: "12px", color: "#6a5f52", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginTop: "20px" } as React.CSSProperties,
     periodText: { fontSize: "15px", color: "#c2b89a", marginTop: "4px" } as React.CSSProperties,
-
-    // Customer + summary row
     metaRow: { display: "flex", gap: "0", borderBottom: "1px solid #3a3020", flexWrap: "wrap" as const } as React.CSSProperties,
     metaBlock: { padding: "18px 28px", flex: "1", minWidth: "140px" } as React.CSSProperties,
     metaLabel: { fontSize: "10px", color: "#6a5f52", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: "4px" } as React.CSSProperties,
     metaValue: { fontSize: "14px", color: "#c2b89a" } as React.CSSProperties,
     metaDivider: { width: "1px", backgroundColor: "#3a3020" } as React.CSSProperties,
-
-    // Summary cards
     summaryRow: { display: "flex", borderBottom: "1px solid #3a3020", flexWrap: "wrap" as const } as React.CSSProperties,
     summaryCard: { flex: "1", padding: "16px 28px", minWidth: "120px", borderRight: "1px solid #3a3020" } as React.CSSProperties,
     summaryLabel: { fontSize: "10px", color: "#6a5f52", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: "6px" } as React.CSSProperties,
-    summaryCredit: { fontSize: "18px", fontWeight: 700, color: "#4a9a6a" } as React.CSSProperties,
-    summaryDebit: { fontSize: "18px", fontWeight: 700, color: "#c9a84c" } as React.CSSProperties,
-    summaryClosing: { fontSize: "18px", fontWeight: 700, color: "#c9a84c" } as React.CSSProperties,
-
-    // Table
     tableWrap: { overflowX: "auto" as const } as React.CSSProperties,
     table: { width: "100%", borderCollapse: "collapse" as const, fontSize: "13px" } as React.CSSProperties,
-    th: {
-      padding: "12px 16px", textAlign: "left" as const, fontSize: "10px", letterSpacing: "0.1em",
-      color: "#6a5f52", textTransform: "uppercase" as const, borderBottom: "1px solid #3a3020",
-      backgroundColor: "#1a1612", whiteSpace: "nowrap" as const,
-    } as React.CSSProperties,
-    thRight: {
-      padding: "12px 16px", textAlign: "right" as const, fontSize: "10px", letterSpacing: "0.1em",
-      color: "#6a5f52", textTransform: "uppercase" as const, borderBottom: "1px solid #3a3020",
-      backgroundColor: "#1a1612", whiteSpace: "nowrap" as const,
-    } as React.CSSProperties,
+    th: { padding: "12px 16px", textAlign: "left" as const, fontSize: "10px", letterSpacing: "0.1em", color: "#6a5f52", textTransform: "uppercase" as const, borderBottom: "1px solid #3a3020", backgroundColor: "#1a1612", whiteSpace: "nowrap" as const } as React.CSSProperties,
+    thRight: { padding: "12px 16px", textAlign: "right" as const, fontSize: "10px", letterSpacing: "0.1em", color: "#6a5f52", textTransform: "uppercase" as const, borderBottom: "1px solid #3a3020", backgroundColor: "#1a1612", whiteSpace: "nowrap" as const } as React.CSSProperties,
     td: { padding: "14px 16px", borderBottom: "1px solid #2a2218", color: "#c2b89a", verticalAlign: "top" as const } as React.CSSProperties,
     tdRight: { padding: "14px 16px", borderBottom: "1px solid #2a2218", color: "#c2b89a", textAlign: "right" as const, verticalAlign: "top" as const, whiteSpace: "nowrap" as const } as React.CSSProperties,
     tdCredit: { padding: "14px 16px", borderBottom: "1px solid #2a2218", color: "#4a9a6a", textAlign: "right" as const, verticalAlign: "top" as const, whiteSpace: "nowrap" as const, fontWeight: 600 } as React.CSSProperties,
     tdDebit: { padding: "14px 16px", borderBottom: "1px solid #2a2218", color: "#c9a84c", textAlign: "right" as const, verticalAlign: "top" as const, whiteSpace: "nowrap" as const, fontWeight: 600 } as React.CSSProperties,
     tdBalance: { padding: "14px 16px", borderBottom: "1px solid #2a2218", textAlign: "right" as const, verticalAlign: "top" as const, whiteSpace: "nowrap" as const, fontWeight: 600 } as React.CSSProperties,
-
-    // Opening/closing rows
     openingRow: { backgroundColor: "#221e18" } as React.CSSProperties,
-
-    // Footer
     footer: { padding: "20px 28px", borderTop: "1px solid #3a3020" } as React.CSSProperties,
     footerText: { fontSize: "11px", color: "#4a3f30", letterSpacing: "0.05em" } as React.CSSProperties,
   };
@@ -181,42 +138,108 @@ export default function InvoicePage() {
         }
       `}</style>
 
-      <main style={s.page}>
-        <div style={s.container}>
+      <main style={{
+        minHeight: "100svh",
+        backgroundImage: "url('/inner-bg.png')",
+        backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed",
+        fontFamily: "'Georgia', serif",
+      }}>
 
-          {/* Back + controls */}
+        {/* Overlay */}
+        <div className="no-print" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(255,255,255,0.4)", zIndex: 0, pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: "760px", margin: "0 auto", padding: "24px 16px 60px", position: "relative", zIndex: 1 }}>
+
+          {/* Controls */}
           <div className="no-print">
-            <button style={s.backBtn} onClick={() => router.back()}>← Back</button>
 
-            <div style={s.controls}>
+            {/* Header bar */}
+            <div style={{
+              ...glassCard,
+              borderRadius: "12px",
+              padding: "14px 20px",
+              display: "flex", alignItems: "center", gap: "12px",
+              marginBottom: "20px",
+            }}>
+              <button
+                onClick={() => router.back()}
+                style={{ background: "none", border: "none", color: "#9a8060", cursor: "pointer", fontSize: "18px", padding: "0 4px 0 0" }}
+              >
+                ←
+              </button>
               <div>
-                <div style={s.label}>From</div>
-                <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={s.dateInput} />
+                <h1 style={{ color: "#3a3020", fontSize: "16px", fontWeight: 600, margin: 0 }}>Account Statement</h1>
+                <p style={{ color: "#b09a70", fontSize: "11px", marginTop: "1px" }}>{invoice?.user.name || "Loading..."}</p>
+              </div>
+            </div>
+
+            {/* Date range + buttons */}
+            <div style={{
+              ...glassCard,
+              borderRadius: "12px",
+              padding: "16px 20px",
+              display: "flex", gap: "10px", alignItems: "flex-end", flexWrap: "wrap",
+              marginBottom: "20px",
+            }}>
+              <div>
+                <div style={{ fontSize: "10px", letterSpacing: "0.1em", color: "#b09a70", textTransform: "uppercase", marginBottom: "6px" }}>From</div>
+                <input
+                  type="date" value={fromDate}
+                  onChange={e => setFromDate(e.target.value)}
+                  style={{
+                    background: "rgba(255,255,255,0.6)", border: "1px solid rgba(180,150,90,0.25)",
+                    borderRadius: "6px", color: "#8a6a28", padding: "8px 12px", fontSize: "13px",
+                    outline: "none", width: "140px",
+                  }}
+                />
               </div>
               <div>
-                <div style={s.label}>To</div>
-                <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={s.dateInput} />
+                <div style={{ fontSize: "10px", letterSpacing: "0.1em", color: "#b09a70", textTransform: "uppercase", marginBottom: "6px" }}>To</div>
+                <input
+                  type="date" value={toDate}
+                  onChange={e => setToDate(e.target.value)}
+                  style={{
+                    background: "rgba(255,255,255,0.6)", border: "1px solid rgba(180,150,90,0.25)",
+                    borderRadius: "6px", color: "#8a6a28", padding: "8px 12px", fontSize: "13px",
+                    outline: "none", width: "140px",
+                  }}
+                />
               </div>
-              <button style={s.generateBtn} onClick={fetchInvoice} disabled={loading}>
+              <button
+                onClick={fetchInvoice} disabled={loading}
+                style={{
+                  background: "rgba(201,168,76,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                  border: "1px solid rgba(201,168,76,0.4)", color: "#5a3e10",
+                  borderRadius: "6px", padding: "9px 20px", fontSize: "13px", fontWeight: 700,
+                  cursor: loading ? "not-allowed" : "pointer", letterSpacing: "0.03em",
+                }}
+              >
                 {loading ? "Loading..." : "Generate"}
               </button>
               {invoice && (
-                <button style={s.printBtn} onClick={() => window.print()}>
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    background: "rgba(255,255,255,0.5)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+                    border: "1px solid rgba(201,168,76,0.35)", color: "#8a6a28",
+                    borderRadius: "6px", padding: "9px 18px", fontSize: "13px",
+                    cursor: "pointer", letterSpacing: "0.03em",
+                  }}
+                >
                   Print / Save PDF
                 </button>
               )}
             </div>
 
             {error && (
-              <div style={{ color: "#c97a4a", fontSize: "13px", marginBottom: "16px" }}>{error}</div>
+              <div style={{ color: "#c0392b", fontSize: "13px", marginBottom: "16px" }}>{error}</div>
             )}
           </div>
 
-          {/* Invoice document */}
+          {/* Invoice document — kept dark/formal intentionally */}
           {invoice && (
             <div style={s.doc} className="print-doc">
 
-              {/* Header */}
               <div style={s.header}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                   <div>
@@ -232,7 +255,6 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              {/* Customer + opening balance */}
               <div style={s.metaRow}>
                 <div style={s.metaBlock}>
                   <div style={s.metaLabel}>Customer</div>
@@ -247,24 +269,20 @@ export default function InvoicePage() {
                 <div style={s.metaDivider} />
                 <div style={s.metaBlock}>
                   <div style={s.metaLabel}>Closing Balance</div>
-                  <div style={{
-                    fontSize: "16px", fontWeight: 700,
-                    color: parseFloat(invoice.closing_balance) < 0 ? "#c94a4a" : "#4a9a6a"
-                  }}>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: parseFloat(invoice.closing_balance) < 0 ? "#c94a4a" : "#4a9a6a" }}>
                     {formatAmount(invoice.closing_balance)}
                   </div>
                 </div>
               </div>
 
-              {/* Summary row */}
               <div style={s.summaryRow}>
                 <div style={s.summaryCard}>
                   <div style={s.summaryLabel}>Total Credits</div>
-                  <div style={s.summaryCredit}>{formatAmount(invoice.total_credits)}</div>
+                  <div style={{ fontSize: "18px", fontWeight: 700, color: "#4a9a6a" }}>{formatAmount(invoice.total_credits)}</div>
                 </div>
                 <div style={s.summaryCard}>
                   <div style={s.summaryLabel}>Total Debits</div>
-                  <div style={s.summaryDebit}>{formatAmount(invoice.total_debits)}</div>
+                  <div style={{ fontSize: "18px", fontWeight: 700, color: "#c9a84c" }}>{formatAmount(invoice.total_debits)}</div>
                 </div>
                 <div style={{ ...s.summaryCard, borderRight: "none" }}>
                   <div style={s.summaryLabel}>Transactions</div>
@@ -272,7 +290,6 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              {/* Table */}
               <div style={s.tableWrap}>
                 <table style={s.table}>
                   <thead>
@@ -286,16 +303,13 @@ export default function InvoicePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Opening balance row */}
                     <tr style={s.openingRow}>
                       <td style={s.td} colSpan={5}>
                         <span style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6a5f52" }}>
                           Opening Balance
                         </span>
                       </td>
-                      <td style={{ ...s.tdBalance, color: "#c2b89a" }}>
-                        {formatAmount(invoice.opening_balance)}
-                      </td>
+                      <td style={{ ...s.tdBalance, color: "#c2b89a" }}>{formatAmount(invoice.opening_balance)}</td>
                     </tr>
 
                     {invoice.entries.map((entry) => {
@@ -309,20 +323,12 @@ export default function InvoicePage() {
                           <td style={s.td}>
                             <div>{entry.description}</div>
                             {entry.transaction_id && (
-                              <div style={{ fontSize: "11px", color: "#6a5f52", marginTop: "2px" }}>
-                                Ref: {entry.transaction_id}
-                              </div>
+                              <div style={{ fontSize: "11px", color: "#6a5f52", marginTop: "2px" }}>Ref: {entry.transaction_id}</div>
                             )}
                           </td>
-                          <td style={{ ...s.td, fontSize: "12px", color: "#6a5f52" }}>
-                            {entry.mode || "—"}
-                          </td>
-                          <td className="credit-cell" style={entry.credit ? s.tdCredit : s.tdRight}>
-                            {formatAmount(entry.credit)}
-                          </td>
-                          <td className="debit-cell" style={entry.debit ? s.tdDebit : s.tdRight}>
-                            {formatAmount(entry.debit)}
-                          </td>
+                          <td style={{ ...s.td, fontSize: "12px", color: "#6a5f52" }}>{entry.mode || "—"}</td>
+                          <td className="credit-cell" style={entry.credit ? s.tdCredit : s.tdRight}>{formatAmount(entry.credit)}</td>
+                          <td className="debit-cell" style={entry.debit ? s.tdDebit : s.tdRight}>{formatAmount(entry.debit)}</td>
                           <td
                             className={bal < 0 ? "balance-negative" : "balance-positive"}
                             style={{ ...s.tdBalance, color: bal < 0 ? "#c94a4a" : "#c2b89a" }}
@@ -333,18 +339,13 @@ export default function InvoicePage() {
                       );
                     })}
 
-                    {/* Closing balance row */}
                     <tr style={{ ...s.openingRow, borderTop: "1px solid #3a3020" }}>
                       <td style={s.td} colSpan={5}>
                         <span style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6a5f52" }}>
                           Closing Balance
                         </span>
                       </td>
-                      <td style={{
-                        ...s.tdBalance,
-                        color: parseFloat(invoice.closing_balance) < 0 ? "#c94a4a" : "#4a9a6a",
-                        fontSize: "15px"
-                      }}>
+                      <td style={{ ...s.tdBalance, color: parseFloat(invoice.closing_balance) < 0 ? "#c94a4a" : "#4a9a6a", fontSize: "15px" }}>
                         {formatAmount(invoice.closing_balance)}
                       </td>
                     </tr>
@@ -352,7 +353,6 @@ export default function InvoicePage() {
                 </table>
               </div>
 
-              {/* Footer */}
               <div style={s.footer}>
                 <div style={s.footerText}>
                   Generated on {new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })} · Kmcho Canine Kitchen · This is a system-generated statement
@@ -362,9 +362,8 @@ export default function InvoicePage() {
             </div>
           )}
 
-          {/* Empty state */}
           {!invoice && !loading && !error && (
-            <div style={{ textAlign: "center", color: "#6a5f52", padding: "60px 0", fontSize: "14px" }}>
+            <div style={{ textAlign: "center", color: "#b09a70", padding: "60px 0", fontSize: "14px" }}>
               Select a date range and tap Generate
             </div>
           )}

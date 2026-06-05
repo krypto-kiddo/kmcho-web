@@ -58,3 +58,9 @@ input:-webkit-autofill {
   background: #3a3020;
   border-radius: 3px;
 }
+
+/* Login page autofill override */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.8) inset !important;
+  -webkit-text-fill-color: #3a3020 !important;
+}
