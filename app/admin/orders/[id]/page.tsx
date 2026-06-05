@@ -23,8 +23,8 @@ interface User {
 
 const glassCard = {
   background: "rgba(255,255,255,0.45)",
-  backdropFilter: "blur(16px)",
-  WebkitBackdropFilter: "blur(16px)",
+  backdropFilter: "blur(8px)",
+  WebkitBackdropFilter: "blur(8px)",
   border: "1px solid rgba(255,255,255,0.7)",
   borderRadius: "14px",
   boxShadow: "0 4px 20px rgba(160,130,80,0.08), inset 0 1px 0 rgba(255,255,255,0.8)",
