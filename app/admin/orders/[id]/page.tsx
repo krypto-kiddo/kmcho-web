@@ -162,7 +162,7 @@ export default function OrderDetailPage() {
   if (loading) return (
     <main style={{
       minHeight: "100svh",
-      backgroundImage: "url('/inner-bg.png')",
+      backgroundImage: "url('/inner-bg.webp')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed",
@@ -178,7 +178,7 @@ export default function OrderDetailPage() {
   return (
     <main style={{
       minHeight: "100svh",
-      backgroundImage: "url('/inner-bg.png')",
+      backgroundImage: "url('/inner-bg.webp')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed",

@@ -76,7 +76,7 @@ export default function AdminDashboard() {
     <main
       style={{
         minHeight: "100svh",
-        backgroundImage: "url('/inner-bg.png')",
+        backgroundImage: "url('/inner-bg.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center center",
         backgroundAttachment: "fixed",

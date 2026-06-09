@@ -54,7 +54,7 @@ export default function LoginPage() {
       className="flex flex-col items-center justify-center"
       style={{
         minHeight: "100svh",
-        backgroundImage: "url('/login-bg.png')",
+        backgroundImage: "url('/login-bg.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         padding: "0 20px",

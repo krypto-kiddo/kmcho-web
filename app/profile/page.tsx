@@ -113,7 +113,7 @@ export default function ProfilePage() {
   if (loading) return (
     <main style={{
       minHeight: "100svh",
-      backgroundImage: "url('/inner-bg.png')",
+      backgroundImage: "url('/inner-bg.webp')",
       backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed",
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
   return (
     <main style={{
       minHeight: "100svh",
-      backgroundImage: "url('/inner-bg.png')",
+      backgroundImage: "url('/inner-bg.webp')",
       backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed",
       paddingBottom: "40px",
     }}>
