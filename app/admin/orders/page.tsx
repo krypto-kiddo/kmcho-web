@@ -116,7 +116,7 @@ export default function OrdersPage() {
   if (loading) return (
     <main style={{
       minHeight: "100svh",
-      backgroundImage: "url('/inner-bg.png')",
+      backgroundImage: "url('/inner-bg.webp')",
       backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed",
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
@@ -130,7 +130,7 @@ export default function OrdersPage() {
   return (
     <main style={{
       minHeight: "100svh",
-      backgroundImage: "url('/inner-bg.png')",
+      backgroundImage: "url('/inner-bg.webp')",
       backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed",
       paddingBottom: "40px",
     }}>
