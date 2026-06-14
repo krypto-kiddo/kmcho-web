@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import ConfirmModal from "@/app/components/ConfirmModal";
 
 interface User {
   id: number;
@@ -33,6 +34,15 @@ interface Order {
   created_at: string;
 }
 
+interface PendingAction {
+  type: "charge" | "credit";
+  amount: string;
+  description: string;
+  mode?: string;
+  date?: string;
+  execute: () => Promise<void>;
+}
+
 const glassCard = {
   background: "rgba(255,255,255,0.45)",
   backdropFilter: "blur(8px)",
@@ -54,6 +64,15 @@ const glassInput = {
   outline: "none",
   width: "100%",
 } as React.CSSProperties;
+
+const detailRow = (label: string, value: string) => (
+  <div key={label}>
+    <p style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#b09a70", marginBottom: "2px" }}>
+      {label}
+    </p>
+    <p style={{ fontSize: "14px", fontWeight: 600, color: "#3a3020" }}>{value}</p>
+  </div>
+);
 
 export default function CustomerDetail() {
   const router = useRouter();
@@ -81,6 +100,8 @@ export default function CustomerDetail() {
   const [orderAmount, setOrderAmount] = useState("100");
   const [orderDate, setOrderDate] = useState<string>(new Date().toISOString().split("T")[0]);
 
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   async function loadData() {
@@ -106,59 +127,92 @@ export default function CustomerDetail() {
 
   useEffect(() => { loadData(); }, [userId]);
 
+  // ── Credit ────────────────────────────────────────────────────────────────
+
   async function handleCredit(e: React.FormEvent) {
     e.preventDefault();
     setCreditError(""); setCreditSuccess("");
-    setCreditLoading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ledger/credit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          user_id: parseInt(userId),
-          type: "credit",
-          amount: parseFloat(creditAmount),
-          mode_of_payment: creditMode,
-          transaction_id: creditTransactionId || null,
-          description: creditNote || `Top-up via ${creditMode}`,
-        }),
-      });
-      if (!res.ok) { const d = await res.json(); setCreditError(d.detail || "Failed"); return; }
-      setCreditSuccess("Balance updated successfully");
-      setCreditAmount(""); setCreditNote(""); setCreditTransactionId("");
-      loadData();
-    } catch {
-      setCreditError("Could not connect to server");
-    } finally {
-      setCreditLoading(false);
-    }
+
+    setPendingAction({
+      type: "credit",
+      amount: creditAmount,
+      description: creditNote || `Top-up via ${creditMode}`,
+      mode: creditMode,
+      execute: async () => {
+        setCreditLoading(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ledger/credit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              user_id: parseInt(userId),
+              type: "credit",
+              amount: parseFloat(creditAmount),
+              mode_of_payment: creditMode,
+              transaction_id: creditTransactionId || null,
+              description: creditNote || `Top-up via ${creditMode}`,
+            }),
+          });
+          if (!res.ok) { const d = await res.json(); setCreditError(d.detail || "Failed"); return; }
+          setCreditSuccess("Balance updated successfully");
+          setCreditAmount(""); setCreditNote(""); setCreditTransactionId("");
+          loadData();
+        } catch {
+          setCreditError("Could not connect to server");
+        } finally {
+          setCreditLoading(false);
+        }
+      },
+    });
   }
+
+  // ── Order ─────────────────────────────────────────────────────────────────
 
   async function handleOrder(e: React.FormEvent) {
     e.preventDefault();
     setOrderError(""); setOrderSuccess("");
-    setOrderLoading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          user_id: parseInt(userId),
-          amount: parseFloat(orderAmount),
-          description: orderNote || "Daily meal",
-          order_date: new Date(orderDate).toISOString(),
-        }),
-      });
-      if (!res.ok) { const d = await res.json(); setOrderError(d.detail || "Failed"); return; }
-      setOrderSuccess("Order created successfully");
-      setOrderNote(""); setOrderAmount("100"); setOrderDate(new Date().toISOString().split("T")[0]);
-      loadData();
-    } catch {
-      setOrderError("Could not connect to server");
-    } finally {
-      setOrderLoading(false);
-    }
+
+    setPendingAction({
+      type: "charge",
+      amount: orderAmount,
+      description: orderNote || "Daily meal",
+      date: orderDate,
+      execute: async () => {
+        setOrderLoading(true);
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              user_id: parseInt(userId),
+              amount: parseFloat(orderAmount),
+              description: orderNote || "Daily meal",
+              order_date: new Date(orderDate).toISOString(),
+            }),
+          });
+          if (!res.ok) { const d = await res.json(); setOrderError(d.detail || "Failed"); return; }
+          setOrderSuccess("Order created successfully");
+          setOrderNote(""); setOrderAmount("0"); setOrderDate(new Date().toISOString().split("T")[0]);
+          loadData();
+        } catch {
+          setOrderError("Could not connect to server");
+        } finally {
+          setOrderLoading(false);
+        }
+      },
+    });
   }
+
+  // ── Confirm / Cancel ──────────────────────────────────────────────────────
+
+  async function handleConfirm() {
+    if (!pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null); // close modal first so the user sees the loading state on the form
+    await action.execute();
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   function typeColor(type: string) {
     if (type === "credit") return "#2e7d32";
@@ -184,6 +238,8 @@ export default function CustomerDetail() {
     return "#2e7d32";
   }
 
+  // ── Loading ───────────────────────────────────────────────────────────────
+
   if (loading) return (
     <main style={{
       minHeight: "100svh",
@@ -199,6 +255,8 @@ export default function CustomerDetail() {
     </main>
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <main style={{
       minHeight: "100svh",
@@ -211,6 +269,35 @@ export default function CustomerDetail() {
 
       {/* Overlay */}
       <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(255,255,255,0.4)", zIndex: 0, pointerEvents: "none" }} />
+
+      {/* ── Confirmation modal ── */}
+      <ConfirmModal
+        isOpen={pendingAction !== null}
+        title={pendingAction?.type === "charge" ? "Create order" : "Add credit"}
+        onConfirm={handleConfirm}
+        onCancel={() => setPendingAction(null)}
+      >
+        {pendingAction && (
+          <>
+            {detailRow(
+              "Type",
+              pendingAction.type === "charge" ? "Debit (order)" : "Credit"
+            )}
+            {detailRow(
+              "Amount",
+              `₹${Number(pendingAction.amount).toLocaleString("en-IN")}`
+            )}
+            {pendingAction.mode && detailRow("Mode", pendingAction.mode)}
+            {detailRow("Description", pendingAction.description)}
+            {pendingAction.date && detailRow(
+              "Date",
+              new Date(pendingAction.date).toLocaleDateString("en-IN", {
+                day: "numeric", month: "short", year: "numeric"
+              })
+            )}
+          </>
+        )}
+      </ConfirmModal>
 
       {/* Header */}
       <div style={{
