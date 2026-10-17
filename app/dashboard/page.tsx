@@ -12,24 +12,6 @@ interface User {
   current_balance: number;
 }
 
-interface LedgerEntry {
-  id: number;
-  type: string;
-  amount: number;
-  mode_of_payment: string;
-  description: string;
-  created_at: string;
-  order_id: number | null;
-}
-
-interface Order {
-  id: number;
-  status: string;
-  description: string;
-  order_date: string;
-  created_at: string;
-}
-
 const glassCard = {
   background: "rgba(255,255,255,0.45)",
   backdropFilter: "blur(8px)",
@@ -55,10 +37,7 @@ const glassInput = {
 export default function CustomerDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [ledger, setLedger] = useState<LedgerEntry[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"ledger" | "orders">("ledger");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [newPassword, setNewPassword] = useState("");
@@ -83,13 +62,6 @@ export default function CustomerDashboard() {
         if (me.is_admin) { router.push("/admin"); return; }
         setUser(me);
         if (!me.is_onboarded) setShowOnboarding(true);
-
-        const [ledgerRes, ordersRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/ledger/${me.id}`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        setLedger(await ledgerRes.json());
-        setOrders(await ordersRes.json());
       } catch {
         router.push("/");
       } finally {
@@ -122,36 +94,6 @@ export default function CustomerDashboard() {
       setOnboardingLoading(false);
     }
   }
-
-  function balanceColor(balance: number) {
-    if (balance <= 0) return "#c0392b";
-    if (balance < 500) return "#b8860b";
-    return "#2e7d32";
-  }
-
-  function typeColor(type: string) {
-    if (type === "credit") return "#2e7d32";
-    if (type === "debit") return "#c0392b";
-    return "#b8860b";
-  }
-
-  function statusColor(status: string) {
-    if (status === "delivered") return "#2e7d32";
-    if (status === "cancelled") return "#c0392b";
-    return "#b8860b";
-  }
-
-  function statusBg(status: string) {
-    if (status === "delivered") return "rgba(46,125,50,0.1)";
-    if (status === "cancelled") return "rgba(192,57,43,0.1)";
-    return "rgba(184,134,11,0.1)";
-  }
-
-  const spentThisMonth = ledger.filter(e => {
-    const d = new Date(e.created_at);
-    const now = new Date();
-    return e.type === "debit" && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).reduce((sum, e) => sum + Number(e.amount), 0);
 
   if (loading) return (
     <main style={{
@@ -208,128 +150,39 @@ export default function CustomerDashboard() {
         </div>
       </div>
 
-      <div style={{ padding: "20px", position: "relative", zIndex: 1 }}>
+      {/* Holding page content */}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 24px", textAlign: "center" }}>
+        <div style={{ ...glassCard, padding: "36px 28px", maxWidth: "360px", width: "100%" }}>
 
-        {/* Balance card */}
-        <div style={{ ...glassCard, padding: "24px", marginBottom: "12px", textAlign: "center" }}>
-          <p style={{ fontSize: "11px", color: "#b09a70", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
-            Wallet balance
+          <div style={{ fontSize: "32px", marginBottom: "16px" }}>🐾</div>
+
+          <h2 style={{ color: "#8a6a28", fontSize: "18px", fontWeight: 600, marginBottom: "10px", lineHeight: 1.3 }}>
+            We're simplifying things
+          </h2>
+
+          <p style={{ color: "#9a8060", fontSize: "13px", lineHeight: 1.7, marginBottom: "8px" }}>
+            Our tracking system got a little complicated, and we're rebuilding it to be cleaner and easier for you.
           </p>
-          <p style={{ fontSize: "48px", fontWeight: 700, color: balanceColor(Number(user?.current_balance)), lineHeight: 1 }}>
-            ₹{Number(user?.current_balance).toLocaleString("en-IN")}
+
+          <p style={{ color: "#b09a70", fontSize: "12px", lineHeight: 1.6 }}>
+            Your account and balance are safe. The portal will be back soon with a much better experience.
           </p>
-          {Number(user?.current_balance) < 500 && Number(user?.current_balance) > 0 && (
-            <p style={{ fontSize: "12px", color: "#b8860b", marginTop: "10px", background: "rgba(184,134,11,0.1)", border: "1px solid rgba(184,134,11,0.25)", borderRadius: "6px", padding: "6px 12px", display: "inline-block" }}>
-              Low balance — please recharge soon
-            </p>
-          )}
-          {Number(user?.current_balance) <= 0 && (
-            <p style={{ fontSize: "12px", color: "#c0392b", marginTop: "10px", background: "rgba(192,57,43,0.1)", border: "1px solid rgba(192,57,43,0.25)", borderRadius: "6px", padding: "6px 12px", display: "inline-block" }}>
-              No balance — please recharge
-            </p>
-          )}
-        </div>
 
-        {/* Statement button */}
-        <button
-          type="button"
-          onClick={() => router.push(`/invoice/${user?.id}`)}
-          style={{
-            width: "100%", marginBottom: "12px",
-            background: "rgba(255,255,255,0.4)",
-            backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-            border: "1px solid rgba(201,168,76,0.35)",
-            borderRadius: "10px", padding: "12px",
-            fontSize: "13px", color: "#8a6a28", cursor: "pointer", letterSpacing: "0.05em",
-            transition: "all 0.15s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(201,168,76,0.15)"; e.currentTarget.style.borderColor = "rgba(201,168,76,0.5)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.4)"; e.currentTarget.style.borderColor = "rgba(201,168,76,0.35)"; }}
-        >
-          View Statement
-        </button>
+          <div style={{ marginTop: "24px", height: "1px", backgroundColor: "rgba(180,150,90,0.2)" }} />
 
-        {/* Stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
-          <div style={{ ...glassCard, borderRadius: "10px", padding: "14px" }}>
-            <p style={{ fontSize: "11px", color: "#b09a70", marginBottom: "4px" }}>Total orders</p>
-            <p style={{ fontSize: "22px", fontWeight: 600, color: "#3a3020" }}>{orders.length}</p>
-          </div>
-          <div style={{ ...glassCard, borderRadius: "10px", padding: "14px" }}>
-            <p style={{ fontSize: "11px", color: "#b09a70", marginBottom: "4px" }}>Spent this month</p>
-            <p style={{ fontSize: "22px", fontWeight: 600, color: "#8a6a28" }}>
-              ₹{spentThisMonth.toLocaleString("en-IN")}
-            </p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
-          {(["ledger", "orders"] as const).map((tab) => (
-            <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "7px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: 500,
-                backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-                border: activeTab === tab ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(255,255,255,0.6)",
-                background: activeTab === tab ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.4)",
-                color: activeTab === tab ? "#8a6a28" : "#b09a70",
-                cursor: "pointer", textTransform: "capitalize",
-              }}
+          <p style={{ color: "#b09a70", fontSize: "11px", marginTop: "16px", letterSpacing: "0.05em" }}>
+            Questions?{" "}
+            <a
+              href="https://wa.me/917043759777"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#8a6a28", textDecoration: "none" }}
             >
-              {tab} {tab === "ledger" ? `(${ledger.length})` : `(${orders.length})`}
-            </button>
-          ))}
+              Chat with us on WhatsApp
+            </a>
+          </p>
+
         </div>
-
-        {/* Ledger entries */}
-        {activeTab === "ledger" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {ledger.length === 0 && <p style={{ color: "#b09a70", fontSize: "13px", textAlign: "center", padding: "40px 0" }}>No transactions yet</p>}
-            {ledger.map((entry) => (
-              <div key={entry.id} style={{ ...glassCard, borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <p style={{ fontSize: "13px", color: "#3a3020", marginBottom: "3px" }}>
-                    {entry.description || (entry.type === "credit" ? "Wallet top-up" : "Meal deduction")}
-                  </p>
-                  <p style={{ fontSize: "11px", color: "#b09a70" }}>
-                    {entry.mode_of_payment && `${entry.mode_of_payment} · `}
-                    {new Date(entry.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                  </p>
-                </div>
-                <p style={{ fontSize: "15px", fontWeight: 600, color: typeColor(entry.type), whiteSpace: "nowrap", marginLeft: "12px" }}>
-                  {entry.type === "debit" ? "-" : "+"}₹{Number(entry.amount).toLocaleString("en-IN")}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Orders */}
-        {activeTab === "orders" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {orders.length === 0 && <p style={{ color: "#b09a70", fontSize: "13px", textAlign: "center", padding: "40px 0" }}>No orders yet</p>}
-            {orders.map((order) => (
-              <div key={order.id} style={{ ...glassCard, borderRadius: "10px", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <p style={{ fontSize: "13px", color: "#3a3020", marginBottom: "3px" }}>{order.description || "Daily meal"}</p>
-                  <p style={{ fontSize: "11px", color: "#b09a70" }}>
-                    {new Date(order.order_date || order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                  </p>
-                </div>
-                <span style={{
-                  fontSize: "11px", fontWeight: 500,
-                  color: statusColor(order.status),
-                  background: statusBg(order.status),
-                  border: `1px solid ${statusColor(order.status)}44`,
-                  borderRadius: "6px", padding: "4px 10px", textTransform: "capitalize",
-                }}>
-                  {order.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
       </div>
 
       {/* Onboarding modal */}
@@ -351,7 +204,6 @@ export default function CustomerDashboard() {
               </p>
             </div>
 
-            {/* Step indicator */}
             <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
               {[1, 2].map((step) => (
                 <div key={step} style={{
