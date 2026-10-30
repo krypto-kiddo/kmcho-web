@@ -65,6 +65,7 @@ export default function InvoicePage() {
   const [fromDate, setFromDate] = useState(defaultRange.from);
   const [toDate, setToDate] = useState(defaultRange.to);
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -80,12 +81,23 @@ export default function InvoicePage() {
       if (res.status === 401) { router.push("/"); return; }
       if (res.status === 429) { setError("Too many requests. Please wait a moment."); return; }
       if (!res.ok) { const d = await res.json(); setError(d.detail || "Failed to load statement"); return; }
-      setInvoice(await res.json());
+      const data = await res.json();
+      setInvoice(data);
+      setInvoiceNumber(crypto.randomUUID());
     } catch {
       setError("Could not connect to server");
     } finally {
       setLoading(false);
     }
+  }
+
+  function handlePrint() {
+    const originalTitle = document.title;
+    const dateStr = invoice?.period.from.replace(/-/g, "") ?? "";
+    const nameStr = invoice?.user.name.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "") ?? "";
+    document.title = `${dateStr}_${nameStr}_${invoiceNumber}`;
+    window.print();
+    document.title = originalTitle;
   }
 
   useEffect(() => {
@@ -101,16 +113,16 @@ export default function InvoicePage() {
     brandSub: { fontSize: "11px", color: "#6a5f52", letterSpacing: "0.1em", marginTop: "2px" } as React.CSSProperties,
     invoiceTitle: { fontSize: "12px", color: "#6a5f52", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginTop: "20px" } as React.CSSProperties,
     periodText: { fontSize: "15px", color: "#c2b89a", marginTop: "4px" } as React.CSSProperties,
-    metaRow: { display: "flex", gap: "0", borderBottom: "1px solid #3a3020", flexWrap: "wrap" as const } as React.CSSProperties,
+    metaRow: { display: "flex", gap: "0", borderBottom: "1px solid #3a3020", flexWrap: "wrap" } as React.CSSProperties,
     metaBlock: { padding: "18px 28px", flex: "1", minWidth: "140px" } as React.CSSProperties,
     metaLabel: { fontSize: "10px", color: "#6a5f52", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: "4px" } as React.CSSProperties,
     metaValue: { fontSize: "14px", color: "#c2b89a" } as React.CSSProperties,
     metaDivider: { width: "1px", backgroundColor: "#3a3020" } as React.CSSProperties,
-    summaryRow: { display: "flex", borderBottom: "1px solid #3a3020", flexWrap: "wrap" as const } as React.CSSProperties,
+    summaryRow: { display: "flex", borderBottom: "1px solid #3a3020", flexWrap: "wrap" } as React.CSSProperties,
     summaryCard: { flex: "1", padding: "16px 28px", minWidth: "120px", borderRight: "1px solid #3a3020" } as React.CSSProperties,
     summaryLabel: { fontSize: "10px", color: "#6a5f52", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: "6px" } as React.CSSProperties,
-    tableWrap: { overflowX: "auto" as const } as React.CSSProperties,
-    table: { width: "100%", borderCollapse: "collapse" as const, fontSize: "13px" } as React.CSSProperties,
+    tableWrap: { overflowX: "auto" } as React.CSSProperties,
+    table: { width: "100%", borderCollapse: "collapse", fontSize: "13px" } as React.CSSProperties,
     th: { padding: "12px 16px", textAlign: "left" as const, fontSize: "10px", letterSpacing: "0.1em", color: "#6a5f52", textTransform: "uppercase" as const, borderBottom: "1px solid #3a3020", backgroundColor: "#1a1612", whiteSpace: "nowrap" as const } as React.CSSProperties,
     thRight: { padding: "12px 16px", textAlign: "right" as const, fontSize: "10px", letterSpacing: "0.1em", color: "#6a5f52", textTransform: "uppercase" as const, borderBottom: "1px solid #3a3020", backgroundColor: "#1a1612", whiteSpace: "nowrap" as const } as React.CSSProperties,
     td: { padding: "14px 16px", borderBottom: "1px solid #2a2218", color: "#c2b89a", verticalAlign: "top" as const } as React.CSSProperties,
@@ -128,6 +140,7 @@ export default function InvoicePage() {
       <style>{`
         @media print {
           body { background: white !important; }
+          main { background: white !important; background-image: none !important; }
           .no-print { display: none !important; }
           .print-doc { border: none !important; background: white !important; color: black !important; }
           .print-doc * { color: black !important; background: transparent !important; border-color: #ccc !important; }
@@ -218,7 +231,7 @@ export default function InvoicePage() {
               </button>
               {invoice && (
                 <button
-                  onClick={() => window.print()}
+                  onClick={handlePrint}
                   style={{
                     background: "rgba(255,255,255,0.5)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
                     border: "1px solid rgba(201,168,76,0.35)", color: "#8a6a28",
@@ -243,6 +256,7 @@ export default function InvoicePage() {
               <div style={s.header}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                   <div>
+                    <img src="/logo.png" alt="Kmcho" style={{ height: 36, marginBottom: 8 }} />
                     <div style={s.brand}>Kmcho</div>
                     <div style={s.brandSub}>Canine Kitchen · my.kmcho.co.in</div>
                   </div>
@@ -250,6 +264,9 @@ export default function InvoicePage() {
                     <div style={s.invoiceTitle}>Account Statement</div>
                     <div style={s.periodText}>
                       {formatDate(invoice.period.from + "T00:00:00")} — {formatDate(invoice.period.to + "T00:00:00")}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#6a5f52", marginTop: "4px", letterSpacing: "0.05em" }}>
+                      Invoice #{invoiceNumber}
                     </div>
                   </div>
                 </div>
@@ -355,7 +372,7 @@ export default function InvoicePage() {
 
               <div style={s.footer}>
                 <div style={s.footerText}>
-                  Generated on {new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })} · Kmcho Canine Kitchen · This is a system-generated statement
+                  Generated on {new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })} · Kmcho Canine Kitchen · This is a system-generated statement · Invoice #{invoiceNumber}
                 </div>
               </div>
 
